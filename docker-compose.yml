@@ -1,0 +1,67 @@
+version: '3'
+
+services:
+  database:
+    # image: mariadb:10.3
+    build:
+      context: .
+      dockerfile: docker/database/Dockerfile
+    environment:
+      - MYSQL_DATABASE=${DATABASE_NAME}
+      - MYSQL_USER=${DATABASE_USER}
+      - MYSQL_PASSWORD=${DATABASE_PASSWORD}
+      - MYSQL_ROOT_PASSWORD=${DATABASE_ROOT_PASSWORD}
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./docker/database/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./docker/database/data:/var/lib/mysql
+    user: ${LOCAL_USER}
+
+  php-fpm:
+    build:
+      context: .
+      dockerfile: docker/php-fpm/Dockerfile
+    depends_on:
+      - database
+    environment:
+      - COMPOSER_MEMORY_LIMIT
+      - COMPOSER_HOME
+      - APP_ENV=${APP_ENV-dev}
+      - APP_SECRET=${APP_SECRET}
+      - DATABASE_URL=${DATABASE_PLATFORM}://${DATABASE_USER}:${DATABASE_PASSWORD}@database:3306/${DATABASE_NAME}
+    volumes:
+      - ./app:/var/www/app
+      - ${LOCAL_COMPOSER_HOME}:${COMPOSER_HOME}
+    user: ${LOCAL_USER}
+
+  nginx:
+    # image: nginx:stable-alpine
+    build:
+      context: .
+      dockerfile: docker/nginx/Dockerfile
+    volumes:
+      - ./app/public:/var/www/app/public
+      - ./docker/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./docker/nginx/sites/:/etc/nginx/sites-available:ro
+      - ./docker/nginx/conf.d/:/etc/nginx/conf.d:ro
+      - ./app/doc/nginx/ez_params.d:/etc/nginx/ez_params.d:ro
+      - ./docker/logs:/var/log
+    depends_on:
+      - php-fpm
+    ports:
+      - "${NGINX_PORT}:80"
+      - "443:443"
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    # container_name: phpmyadmin
+    environment:
+      PMA_HOST: database
+      PMA_PORT: 3306
+    ports:
+      - ${PHPMYADMIN_PORT}:80
+    links:
+      - database
+
+
