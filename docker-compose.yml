@@ -32,7 +32,6 @@ services:
       - DATABASE_URL=${DATABASE_PLATFORM}://${DATABASE_USER}:${DATABASE_PASSWORD}@database:3306/${DATABASE_NAME}
     volumes:
       - ..:/var/www/app
-      - ${LOCAL_COMPOSER_HOME}:${COMPOSER_HOME}
     user: ${LOCAL_USER}
 
   nginx:
@@ -54,7 +53,6 @@ services:
 
   phpmyadmin:
     image: phpmyadmin/phpmyadmin
-    # container_name: phpmyadmin
     environment:
       PMA_HOST: database
       PMA_PORT: 3306

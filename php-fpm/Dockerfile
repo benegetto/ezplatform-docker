@@ -23,8 +23,7 @@ RUN docker-php-ext-install pdo_mysql mysqli xml xsl mbstring intl curl gd zip
 
 COPY --from=composer /usr/bin/composer /usr/bin/composer
 
-WORKDIR /var/www
-# COPY .. /var/www/app
+WORKDIR /var/www/app
 
 # CMD composer install ; wait-for-it database:3306 -- bin/console ezplatform:install clean ;  php-fpm 
 CMD php-fpm 
