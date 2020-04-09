@@ -1,6 +1,6 @@
 FROM php:7.3-fpm-alpine
 
-COPY docker/php-fpm/wait-for-it.sh /usr/bin/wait-for-it
+COPY php-fpm/wait-for-it.sh /usr/bin/wait-for-it
 
 RUN chmod +x /usr/bin/wait-for-it
 
@@ -24,7 +24,7 @@ RUN docker-php-ext-install pdo_mysql mysqli xml xsl mbstring intl curl gd zip
 COPY --from=composer /usr/bin/composer /usr/bin/composer
 
 WORKDIR /var/www
-COPY .. /var/www/app
+# COPY .. /var/www/app
 
 # CMD composer install ; wait-for-it database:3306 -- bin/console ezplatform:install clean ;  php-fpm 
 CMD php-fpm 
